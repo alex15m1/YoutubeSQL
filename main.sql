@@ -13,13 +13,13 @@ DROP TABLE IF EXISTS User;
 CREATE TABLE User (
     user_id INT AUTO_INCREMENT,
     user_link VARCHAR(100),
-    data_of_birth DATE NOT NULL,
+    date_of_birth DATE NOT NULL,
     email VARCHAR(100) NOT NULL,
     user_fullname VARCHAR(100) NOT NULL,
 
-    CONSTRAINT PRIMARY KEY (user_id),
-    CONSTRAINT UNIQUE (email),
-    CONSTRAINT UNIQUE (user_link)
+    CONSTRAINT PRIMARY KEY (user_id), 
+    UNIQUE (email),
+    UNIQUE (user_link)
 );
 
 CREATE TABLE Channel (
@@ -41,9 +41,12 @@ CREATE TABLE Video (
     video_release_date DATETIME,
     video_length TIME NOT NULL,
     content_genre VARCHAR(200),
+    channel_id INT NOT NULL,
 
-    CONSTRAINT PRIMARY KEY (video_id)
-    CHECK (video_length BETWEEN '00:00:00' AND '12:00:00') 
+    CONSTRAINT PRIMARY KEY (video_id),
+    CHECK (video_length BETWEEN '00:00:00' AND '12:00:00'),
+    CONSTRAINT FOREIGN KEY (channel_id)
+        REFERENCES Channel(channel_id)
 
 );
 
@@ -59,15 +62,20 @@ CREATE TABLE YTAlgorithm(
 CREATE TABLE UserNotification (
     notification_id INT AUTO_INCREMENT,
     notification_text VARCHAR(300) NOT NULL,
+    notification_timestamp TIMESTAMP NOT NULL,
     channel_id INT NOT NULL,
     video_id INT NOT NULL,
-    notification_timestamp TIMESTAMP NOT NULL,
+    user_id INT NOT NULL,
     
     CONSTRAINT PRIMARY KEY (notification_id, channel_id, video_id),
     CONSTRAINT FOREIGN KEY (channel_id) REFERENCES Channel (channel_id)
         ON UPDATE CASCADE 
         ON DELETE CASCADE,
     CONSTRAINT FOREIGN KEY (video_id) REFERENCES Video(video_id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+    CONSTRAINT FOREIGN KEY (user_id)
+        REFERENCES User(user_id)
         ON UPDATE CASCADE
         ON DELETE CASCADE
 );
@@ -78,8 +86,8 @@ CREATE TABLE VideoAlgorithm(
     user_id INT NOT NULL,
     video_algorithm_id INT AUTO_INCREMENT,
     
-    CONSTRAINT PRIMARY KEY (algorithm_id, video_algorithm_id, user_id),
-    CONSTRAINT FOREIGN KEY (algorithm_id) REFERENCES Algorithm (algorithm_id)
+    CONSTRAINT PRIMARY KEY (algorithm_id, user_id, video_algorithm_id),
+    CONSTRAINT FOREIGN KEY (algorithm_id) REFERENCES YTAlgorithm (algorithm_id)
         ON UPDATE CASCADE
         ON DELETE CASCADE,
     CONSTRAINT FOREIGN KEY (user_id) REFERENCES User (user_id)
@@ -98,7 +106,7 @@ CREATE TABLE HomeFeed(
     CONSTRAINT FOREIGN KEY (user_id) REFERENCES User (user_id)
         ON UPDATE CASCADE
         ON DELETE CASCADE,
-    CONSTRAINT FOREIGN KEY (algorithm_id) REFERENCES Algorithm (algorithm_id)
+    CONSTRAINT FOREIGN KEY (algorithm_id) REFERENCES YTAlgorithm (algorithm_id)
         ON UPDATE CASCADE
         ON DELETE CASCADE
 );
@@ -108,12 +116,12 @@ CREATE TABLE HomeFeed(
 CREATE TABLE VideoFeed (
     video_id INT NOT NULL,
     video_feed_id INT AUTO_INCREMENT,
-    time_stamp TIME NOT_NULL,
+    time_stamp TIME NOT NULL,
     video_algorithm_id INT NOT NULL,
 
     CONSTRAINT PRIMARY KEY (video_id, video_feed_id),
-    CONSTRAINT FOREIGN KEY (video_id) REFERENCES Videos (video_id),
-    CONSTRAINT FOREIGN KEY (video_algorithm_id) REFERENCES Algorithm (video_algorithm_id) 
+    CONSTRAINT FOREIGN KEY (video_id) REFERENCES Video (video_id),
+    CONSTRAINT FOREIGN KEY (video_algorithm_id) REFERENCES YTAlgorithm (video_algorithm_id) 
         ON UPDATE CASCADE
         ON DELETE CASCADE
  
@@ -124,8 +132,8 @@ CREATE TABLE CommentSection(
     comment_section_id INT AUTO_INCREMENT,
     num_comments INT DEFAULT 0,
 
-    CONSTRAINT PRIMARY KEY (video_id, comment_section-id),
-    CONSTRAINT FOREIGN KEY (video_id) REFERENCES Videos (video_id)
+    CONSTRAINT PRIMARY KEY (video_id, comment_section_id),
+    CONSTRAINT FOREIGN KEY (video_id) REFERENCES Video (video_id)
         ON UPDATE CASCADE
         ON DELETE CASCADE
 );
@@ -271,5 +279,24 @@ VALUES
 
     (4, 'Great workout routine!',
      '2026-09-15 10:00:00', 3, 2);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
