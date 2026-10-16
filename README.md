@@ -1,2 +1,0 @@
-# YoutubeSQL
-Project1
