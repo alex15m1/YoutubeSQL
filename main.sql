@@ -82,11 +82,11 @@ CREATE TABLE UserNotification (
 
 -- 
 CREATE TABLE VideoAlgorithm(
+    video_algorithm_id INT AUTO_INCREMENT,
     algorithm_id INT NOT NULL,
     user_id INT NOT NULL,
-    video_algorithm_id INT AUTO_INCREMENT,
     
-    CONSTRAINT PRIMARY KEY (algorithm_id, user_id, video_algorithm_id),
+    CONSTRAINT PRIMARY KEY (video_algorithm_id, algorithm_id, user_id),
     CONSTRAINT FOREIGN KEY (algorithm_id) REFERENCES YTAlgorithm (algorithm_id)
         ON UPDATE CASCADE
         ON DELETE CASCADE,
@@ -98,11 +98,11 @@ CREATE TABLE VideoAlgorithm(
 
 -- User_id represents a user, home feed's creation is based on the user
 CREATE TABLE HomeFeed(
-    user_id INT NOT NULL,
     home_feed_id INT AUTO_INCREMENT,
+    user_id INT NOT NULL,
     algorithm_id INT NOT NULL,
     
-    CONSTRAINT PRIMARY KEY (user_id, home_feed_id, algorithm_id),
+    CONSTRAINT PRIMARY KEY (home_feed_id, user_id, algorithm_id),
     CONSTRAINT FOREIGN KEY (user_id) REFERENCES User (user_id)
         ON UPDATE CASCADE
         ON DELETE CASCADE,
@@ -114,32 +114,34 @@ CREATE TABLE HomeFeed(
 
 -- TESTING if REFERENCES Algorithm works, currently marked as keyword
 CREATE TABLE VideoFeed (
-    video_id INT NOT NULL,
     video_feed_id INT AUTO_INCREMENT,
+    video_id INT NOT NULL,
     time_stamp TIME NOT NULL,
     video_algorithm_id INT NOT NULL,
 
-    CONSTRAINT PRIMARY KEY (video_id, video_feed_id),
+    CONSTRAINT PRIMARY KEY (video_feed_id, video_id),
     CONSTRAINT FOREIGN KEY (video_id) REFERENCES Video (video_id),
-    CONSTRAINT FOREIGN KEY (video_algorithm_id) REFERENCES YTAlgorithm (video_algorithm_id) 
+    CONSTRAINT FOREIGN KEY (video_algorithm_id) REFERENCES VideoAlgorithm (video_algorithm_id) 
         ON UPDATE CASCADE
         ON DELETE CASCADE
  
 );
 
 CREATE TABLE CommentSection(
-    video_id INT NOT NULL,
     comment_section_id INT AUTO_INCREMENT,
+    video_id INT NOT NULL,
     num_comments INT DEFAULT 0,
 
-    CONSTRAINT PRIMARY KEY (video_id, comment_section_id),
+    CONSTRAINT PRIMARY KEY (comment_section_id, video_id),
     CONSTRAINT FOREIGN KEY (video_id) REFERENCES Video (video_id)
         ON UPDATE CASCADE
         ON DELETE CASCADE
 );
 
+
+
 CREATE TABLE Comment (
-    comment_id INT NOT NULL, 
+    comment_id INT AUTO_INCREMENT, 
     comment_char_length VARCHAR(10000),
     comment_timestamp TIMESTAMP NOT NULL,
     comment_section_id INT NOT NULL,
@@ -155,16 +157,18 @@ CREATE TABLE Comment (
 );
 
 
+
+
 -- 1. USER
 INSERT INTO User
-    (user_id, user_link, data_of_birth, email, user_fullname)
+    (user_id, user_link, date_of_birth, email, user_fullname)
 VALUES
-    (1, 'youtube.com/@alex', '2001-05-15',
-     'alex@example.com', 'Alex Martinez'),
-    (2, 'youtube.com/@john', '1999-08-22',
-     'john@example.com', 'John Smith'),
-    (3, 'youtube.com/@sarah', '2002-11-10',
-     'sarah@example.com', 'Sarah Johnson');
+    (1, 'youtube.com/@mike87', '2000-03-12',
+     'mike87@gmail.com', 'Mike Anderson'),
+    (2, 'youtube.com/@jessica22', '2001-07-19',
+     'jessica22@gmail.com', 'Jessica Miller'),
+    (3, 'youtube.com/@david45', '1998-11-05',
+     'david45@gmail.com', 'David Wilson');
 
 
 -- 2. CHANNEL
@@ -172,58 +176,58 @@ INSERT INTO Channel
     (channel_id, channel_link, channel_age,
      num_subscribers, channel_description, channel_profile_pic)
 VALUES
-    (1, 'youtube.com/@techworld', 5, 15000,
-     'Technology tutorials and programming', NULL),
-    (2, 'youtube.com/@gaminghub', 3, 8500,
-     'Gaming videos and reviews', NULL),
-    (3, 'youtube.com/@fitnesslife', 2, 4200,
-     'Fitness and workout tutorials', NULL);
+    (1, 'youtube.com/@pcbuilds', 4, 12500,
+     'PC builds, parts, and reviews', NULL),
+    (2, 'youtube.com/@randomgaming', 2, 6300,
+     'Gaming clips and playthroughs', NULL),
+    (3, 'youtube.com/@homecooking', 6, 9800,
+     'Cooking videos and recipes', NULL);
 
 
 -- 3. VIDEO
 INSERT INTO Video
     (video_id, video_link, video_title,
      video_description, video_release_date,
-     video_length, content_genre)
+     video_length, content_genre, channel_id)
 VALUES
     (1, 'youtube.com/watch?v=abc123',
-     'Introduction to Programming',
-     'Beginner programming tutorial',
-     '2026-09-01 12:00:00', '00:15:30', 'Education'),
+     'Building a Budget Gaming PC',
+     'Putting together a gaming PC for under $700',
+     '2026-09-01 12:00:00', '00:18:42', 'Technology', 1),
 
     (2, 'youtube.com/watch?v=def456',
-     'Top 10 Games of 2026',
-     'Reviewing the best games',
-     '2026-09-10 15:30:00', '00:22:15', 'Gaming'),
+     'Minecraft Survival Part 1',
+     'Starting a new survival world',
+     '2026-09-10 15:30:00', '00:24:16', 'Gaming', 2),
 
     (3, 'youtube.com/watch?v=ghi789',
-     'Full Body Workout',
-     'Beginner workout routine',
-     '2026-09-15 09:00:00', '00:30:00', 'Fitness');
+     'Making Homemade Pizza',
+     'Making pizza dough and sauce from scratch',
+     '2026-09-15 09:00:00', '00:12:35', 'Cooking', 3);
 
 
 -- 4. USER NOTIFICATION
 INSERT INTO UserNotification
     (notification_id, notification_text,
-     channel_id, video_id, notification_timestamp)
+     notification_timestamp, channel_id, video_id, user_id)
 VALUES
-    (1, 'TechWorld uploaded a new video!',
-     1, 1, '2026-09-01 12:05:00'),
+    (1, 'PC Builds posted a new video',
+     '2026-09-01 12:05:00', 1, 1, 1),
 
-    (2, 'GamingHub uploaded a new video!',
-     2, 2, '2026-09-10 15:35:00'),
+    (2, 'Random Gaming posted a new video',
+     '2026-09-10 15:35:00', 2, 2, 2),
 
-    (3, 'FitnessLife uploaded a new video!',
-     3, 3, '2026-09-15 09:05:00');
+    (3, 'Home Cooking posted a new video',
+     '2026-09-15 09:05:00', 3, 3, 3);
 
 
--- 5. ALGORITHM
-INSERT INTO Algorithm
+-- 5. YT ALGORITHM
+INSERT INTO YTAlgorithm
     (algorithm_id, watch_history, personalization_weight)
 VALUES
-    (1, 15, 80),
-    (2, 25, 90),
-    (3, 10, 65);
+    (1, 12, 75),
+    (2, 28, 85),
+    (3, 9, 60);
 
 
 -- 6. VIDEO ALGORITHM
@@ -246,7 +250,7 @@ VALUES
 
 -- 8. VIDEO FEED
 INSERT INTO VideoFeed
-    (video_id, video_feed_id, time_stamp,
+    (video_feed_id, video_id, time_stamp,
      video_algorithm_id)
 VALUES
     (1, 1, '12:00:00', 1),
@@ -268,35 +272,14 @@ INSERT INTO Comment
     (comment_id, comment_char_length,
      comment_timestamp, comment_section_id, user_id)
 VALUES
-    (1, 'Great programming tutorial!',
+    (1, 'What graphics card did you use?',
      '2026-09-01 13:00:00', 1, 2),
 
-    (2, 'Very helpful explanation.',
+    (2, 'Pretty good build for the price',
      '2026-09-01 14:30:00', 1, 3),
 
-    (3, 'I love these games!',
+    (3, 'You should build a house near spawn',
      '2026-09-10 17:00:00', 2, 1),
 
-    (4, 'Great workout routine!',
+    (4, 'How long did you let the dough rise?',
      '2026-09-15 10:00:00', 3, 2);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
